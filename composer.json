@@ -3,7 +3,7 @@
     "description": "reservation salle universitaires",
     "autoload": {
         "psr-4": {
-            " App\\Application\\": "src/"
+            "App\\": "src/"
         }
     },
     "authors": [
@@ -18,5 +18,25 @@
         "illuminate/database": "^12.0",
         "php-di/php-di": "^7.0",
         "vlucas/phpdotenv": "^5.7"
-    }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11.0"
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
 }
+
+}
+
+
+
+
+
+
+
+
+
+
+
