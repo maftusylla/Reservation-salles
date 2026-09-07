@@ -1,21 +1,17 @@
 <?php
 
+declare(strict_types=1);
 
 use App\Application;
-use Dotenv\Dotenv;
-use Illuminate\Database\Capsule\Manager as Capsule;
+use DI\ContainerBuilder;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 
-$dotenv = Dotenv::createImmutable(dirname(__DIR__));
-$dotenv->load();
+$builder = new ContainerBuilder();
+$builder->addDefinitions(
+    dirname(__DIR__) . '/config/container.php'
+);
+$container = $builder->build();
 
-$config = require dirname(__DIR__) . '/config/database.php';
-
-$capsule = new Capsule();
-$capsule->addConnection($config);
-$capsule->setAsGlobal();
-$capsule->bootEloquent();
-
-$application = new Application();
+$application = $container->get(Application::class);
 $application->run();
