@@ -1,26 +1,26 @@
 <?php
 
+declare(strict_types=1);
 
 namespace App;
 
-use App\Controller\ReservationController;
-use App\Controller\SalleController;
-use App\Repository\EloquentReservationRepository;
-use App\Repository\EloquentSalleRepository;
-use App\Service\AnnulerReservationService;
-use App\Service\CreerReservationService;
-use App\Validation\ReservationValidator;
-use App\Validation\SalleValidator;
-use App\View\Renderer;
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
+use Psr\Container\ContainerInterface;
 
 use function FastRoute\simpleDispatcher;
 
 final class Application
 {
+    public function __construct(
+        private readonly ContainerInterface $container,
+    ) {
+    }
+
     public function run(): void
     {
+        $this->container->get(\Illuminate\Database\Capsule\Manager::class);
+
         $routes = require dirname(__DIR__) . '/routes/web.php';
 
         $dispatcher = simpleDispatcher(function (RouteCollector $r) use ($routes): void {
@@ -46,55 +46,32 @@ final class Application
 
             case Dispatcher::FOUND:
                 [$controllerClass, $methode] = $routeInfo[1];
-                $parametres = $routeInfo[2];
+                $parametres = array_map('intval', $routeInfo[2]);
 
-                $controleur = $this->construireControleur($controllerClass);
+                $controleur = $this->container->get($controllerClass);
 
-                echo $controleur->$methode(...array_map('intval', $parametres));
+                echo $controleur->$methode(...$parametres);
                 break;
         }
     }
 
-    private function construireControleur(string $controllerClass): SalleController|ReservationController
-    {
-        $renderer = new Renderer(dirname(__DIR__) . '/templates');
-        $salles = new EloquentSalleRepository();
-        $reservations = new EloquentReservationRepository();
-
-        return match ($controllerClass) {
-            SalleController::class => new SalleController(
-                $salles,
-                new SalleValidator(),
-                $renderer,
-            ),
-            ReservationController::class => new ReservationController(
-                $reservations,
-                $salles,
-                new ReservationValidator(),
-                new CreerReservationService($salles, $reservations),
-                new AnnulerReservationService($reservations),
-                $renderer,
-            ),
-        };
-    }
-
     private function page404(): string
     {
-        $renderer = new Renderer(dirname(__DIR__) . '/templates');
+        $renderer = $this->container->get(\App\View\Renderer::class);
 
         return $renderer->render('layout/base', [
-            'titre'    => 'Page introuvable',
-            'contenu'  => $renderer->render('error/404'),
+            'titre'   => 'Page introuvable',
+            'contenu' => $renderer->render('error/404'),
         ]);
     }
 
     private function page405(): string
     {
-        $renderer = new Renderer(dirname(__DIR__) . '/templates');
+        $renderer = $this->container->get(\App\View\Renderer::class);
 
         return $renderer->render('layout/base', [
-            'titre'    => 'Méthode non autorisée',
-            'contenu'  => $renderer->render('error/405'),
+            'titre'   => 'Méthode non autorisée',
+            'contenu' => $renderer->render('error/405'),
         ]);
     }
 }
