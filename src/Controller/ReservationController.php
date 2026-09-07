@@ -6,24 +6,23 @@ namespace App\Controller;
 use App\DTO\CreerReservationDTO;
 use App\Exception\ReservationIntrouvableException;
 use App\Exception\SalleIndisponibleException;
+use App\Exception\ValidationEchoueeException;
 use App\Repository\ReservationRepositoryInterface;
 use App\Repository\SalleRepositoryInterface;
 use App\Service\AnnulerReservationService;
 use App\Service\CreerReservationService;
-use App\Validation\ReservationValidator;
 use App\View\Renderer;
 
 final class ReservationController
 {
-    public function __construct(
-        private readonly ReservationRepositoryInterface $reservations,
-        private readonly SalleRepositoryInterface $salles,
-        private readonly ReservationValidator $validator,
-        private readonly CreerReservationService $creerReservation,
-        private readonly AnnulerReservationService $annulerReservation,
-        private readonly Renderer $renderer,
-    ) {
-    }
+   public function __construct(
+    private readonly ReservationRepositoryInterface $reservations,
+    private readonly SalleRepositoryInterface $salles,
+    private readonly CreerReservationService $creerReservation,
+    private readonly AnnulerReservationService $annulerReservation,
+    private readonly Renderer $renderer,
+) {
+}
 
     public function index(): string
     {
@@ -68,41 +67,46 @@ final class ReservationController
     }
 
     public function store(): string
-    {
-        $data = [
-            'salle_id'    => $_POST['salle_id'] ?? '',
-            'responsable' => $_POST['responsable'] ?? '',
-            'email'       => $_POST['email'] ?? '',
-            'motif'       => $_POST['motif'] ?? '',
-            'date_debut'  => $_POST['date_debut'] ?? '',
-            'date_fin'    => $_POST['date_fin'] ?? '',
-        ];
+{
+    $data = [
+        'salle_id'    => $_POST['salle_id'] ?? '',
+        'responsable' => $_POST['responsable'] ?? '',
+        'email'       => $_POST['email'] ?? '',
+        'motif'       => $_POST['motif'] ?? '',
+        'date_debut'  => $_POST['date_debut'] ?? '',
+        'date_fin'    => $_POST['date_fin'] ?? '',
+    ];
 
-        $resultat = $this->validator->validate($data);
-
-        if (! $resultat->isValid()) {
-            return $this->page('Créer une réservation', 'reservation/form', [
-                'salles' => $this->salles->lister(),
-                'errors' => $resultat->errors(),
-                'old'    => $data,
-            ]);
-        }
-
-        $dto = CreerReservationDTO::depuisTableau($resultat->data());
-
-        try {
-            $reservation = $this->creerReservation->executer($dto);
-        } catch (SalleIndisponibleException $exception) {
-            return $this->page('Créer une réservation', 'reservation/form', [
-                'salles' => $this->salles->lister(),
-                'errors' => ['general' => $exception->getMessage()],
-                'old'    => $data,
-            ]);
-        }
-
-        header('Location: /reservations/' . $reservation->id);
-        exit;
+    try {
+        $dto = CreerReservationDTO::builder()
+            ->avecSalleId($data['salle_id'])
+            ->avecResponsable($data['responsable'])
+            ->avecEmail($data['email'])
+            ->avecMotif($data['motif'])
+            ->avecDateDebut($data['date_debut'])
+            ->avecDateFin($data['date_fin'])
+            ->build();
+    } catch (ValidationEchoueeException $exception) {
+        return $this->page('Créer une réservation', 'reservation/form', [
+            'salles' => $this->salles->lister(),
+            'errors' => $exception->resultat()->errors(),
+            'old'    => $data,
+        ]);
     }
+
+    try {
+        $reservation = $this->creerReservation->executer($dto);
+    } catch (SalleIndisponibleException $exception) {
+        return $this->page('Créer une réservation', 'reservation/form', [
+            'salles' => $this->salles->lister(),
+            'errors' => ['general' => $exception->getMessage()],
+            'old'    => $data,
+        ]);
+    }
+
+    header('Location: /reservations/' . $reservation->id);
+    exit;
+}
 
     public function cancel(int $id): string
     {

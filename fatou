@@ -1,0 +1,29 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+require_once __DIR__ . '/vendor/autoload.php';
+
+if ($argc < 2) {
+    fwrite(STDERR, "Usage: php fatou <commande>\n");
+    fwrite(STDERR, "Commandes disponibles: db:migrate, db:seed\n");
+    exit(1);
+}
+
+$commande = $argv[1];
+
+switch ($commande) {
+    case 'db:migrate':
+        require __DIR__ . '/database/migrate.php';
+        break;
+
+    case 'db:seed':
+        require __DIR__ . '/database/seed.php';
+        break;
+
+    default:
+        fwrite(STDERR, "Commande inconnue: $commande\n");
+        fwrite(STDERR, "Commandes disponibles: db:migrate, db:seed\n");
+        exit(1);
+}

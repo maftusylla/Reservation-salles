@@ -1,0 +1,14 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Migration;
+
+use Illuminate\Database\Schema\Builder;
+
+interface MigrationInterface
+{
+    public function up(Builder $schema): void;
+
+    public function down(Builder $schema): void;
+}

@@ -7,7 +7,6 @@ use App\Repository\EloquentSalleRepository;
 use App\Repository\ReservationRepositoryInterface;
 use App\Repository\SalleRepositoryInterface;
 use App\View\Renderer;
-use Dotenv\Dotenv;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
 use function DI\autowire;
@@ -18,17 +17,9 @@ return [
     ReservationRepositoryInterface::class => autowire(EloquentReservationRepository::class),
 
     Capsule::class => factory(function (): Capsule {
-        $dotenv = Dotenv::createImmutable(dirname(__DIR__));
-        $dotenv->load();
+        $demarrerEloquent = require __DIR__ . '/eloquent.php';
 
-        $config = require dirname(__DIR__) . '/config/database.php';
-
-        $capsule = new Capsule();
-        $capsule->addConnection($config);
-        $capsule->setAsGlobal();
-        $capsule->bootEloquent();
-
-        return $capsule;
+        return $demarrerEloquent();
     }),
 
     Renderer::class => factory(function (): Renderer {

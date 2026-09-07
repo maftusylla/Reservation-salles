@@ -1,35 +1,22 @@
 <?php
 
+declare(strict_types=1);
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 
-use Dotenv\Dotenv;
-use Illuminate\Database\Capsule\Manager as Capsule;
-use App\Model\Salle;
+use App\Seeder\SeederInterface;
 
-$dotenv = Dotenv::createImmutable(dirname(__DIR__));
-$dotenv->load();
+$demarrerEloquent = require dirname(__DIR__) . '/config/eloquent.php';
+$demarrerEloquent();
 
-$config = require dirname(__DIR__) . '/config/database.php';
+$fichiersSeeders = glob(__DIR__ . '/seeders/*.php');
+sort($fichiersSeeders);
 
-$capsule = new Capsule();
-$capsule->addConnection($config);
-$capsule->setAsGlobal();
-$capsule->bootEloquent();
+foreach ($fichiersSeeders as $fichier) {
+    /** @var SeederInterface $seeder */
+    $seeder = require $fichier;
 
-$salles = [
-    ['nom' => 'Amphithéâtre A', 'batiment' => 'Bâtiment principal', 'capacite' => 250, 'type' => 'amphitheatre', 'active' => true],
-    ['nom' => 'Salle B12', 'batiment' => 'Bâtiment B', 'capacite' => 40, 'type' => 'cours', 'active' => true],
-    ['nom' => 'Laboratoire Chimie', 'batiment' => 'Bâtiment C', 'capacite' => 24, 'type' => 'laboratoire', 'active' => true],
-    ['nom' => 'Salle Informatique 1', 'batiment' => 'Bâtiment C', 'capacite' => 30, 'type' => 'informatique', 'active' => true],
-    ['nom' => 'Salle de réunion', 'batiment' => 'Bâtiment principal', 'capacite' => 12, 'type' => 'reunion', 'active' => true],
-];
-
-foreach ($salles as $donneesSalle) {
-    Salle::firstOrCreate(
-        ['nom' => $donneesSalle['nom']],
-        $donneesSalle
-    );
+    $nom = basename($fichier, '.php');
+    $seeder->run();
+    echo "Seeder '{$nom}' exécuté." . PHP_EOL;
 }
-
-echo 'Données initiales ajoutées (' . count($salles) . ' salles vérifiées/créées).' . PHP_EOL;

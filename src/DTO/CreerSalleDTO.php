@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
 
 namespace App\DTO;
+
+use App\DTO\CreerSalleDTOBuilder;
 
 final class CreerSalleDTO
 {
@@ -12,6 +15,11 @@ final class CreerSalleDTO
         public readonly string $type,
         public readonly bool $active,
     ) {
+    }
+
+      public static function builder(): CreerSalleDTOBuilder
+    {
+        return new CreerSalleDTOBuilder();
     }
 
     public static function depuisTableau(array $data): self

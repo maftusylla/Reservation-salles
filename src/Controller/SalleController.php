@@ -1,18 +1,23 @@
 <?php
 
+declare(strict_types=1);
 
 namespace App\Controller;
 
 use App\Model\Salle;
+use App\DTO\CreerSalleDTO;
+use App\DTO\CreerSalleDTOBuilder;
+use App\Exception\ValidationEchoueeException;
 use App\Repository\SalleRepositoryInterface;
-use App\Validation\SalleValidator;
 use App\View\Renderer;
+
+
+
 
 final class SalleController
 {
     public function __construct(
         private readonly SalleRepositoryInterface $salles,
-        private readonly SalleValidator $validator,
         private readonly Renderer $renderer,
     ) {
     }
@@ -47,17 +52,31 @@ final class SalleController
     public function store(): string
     {
         $data = $this->donneesFormulaire();
-        $resultat = $this->validator->validate($data);
 
-        if (! $resultat->isValid()) {
+        try {
+            $dto = CreerSalleDTO::builder()
+                ->avecNom($data['nom'])
+                ->avecBatiment($data['batiment'])
+                ->avecCapacite($data['capacite'])
+                ->avecType($data['type'])
+                ->avecActive($data['active'])
+                ->build();
+        } catch (ValidationEchoueeException $exception) {
             return $this->page('Ajouter une salle', 'salle/form', [
                 'salle'  => null,
-                'errors' => $resultat->errors(),
+                'errors' => $exception->resultat()->errors(),
                 'old'    => $data,
             ]);
         }
 
-        $salle = new Salle($resultat->data());
+        $salle = new Salle([
+            'nom'      => $dto->nom,
+            'batiment' => $dto->batiment,
+            'capacite' => $dto->capacite,
+            'type'     => $dto->type,
+            'active'   => $dto->active,
+        ]);
+
         $this->salles->enregistrer($salle);
 
         header('Location: /salles/' . $salle->id);
@@ -88,17 +107,31 @@ final class SalleController
         }
 
         $data = $this->donneesFormulaire();
-        $resultat = $this->validator->validate($data);
 
-        if (! $resultat->isValid()) {
+        try {
+            $dto = CreerSalleDTO::builder()
+                ->avecNom($data['nom'])
+                ->avecBatiment($data['batiment'])
+                ->avecCapacite($data['capacite'])
+                ->avecType($data['type'])
+                ->avecActive($data['active'])
+                ->build();
+        } catch (ValidationEchoueeException $exception) {
             return $this->page('Modifier une salle', 'salle/form', [
                 'salle'  => $salle,
-                'errors' => $resultat->errors(),
+                'errors' => $exception->resultat()->errors(),
                 'old'    => $data,
             ]);
         }
 
-        $salle->fill($resultat->data());
+        $salle->fill([
+            'nom'      => $dto->nom,
+            'batiment' => $dto->batiment,
+            'capacite' => $dto->capacite,
+            'type'     => $dto->type,
+            'active'   => $dto->active,
+        ]);
+
         $this->salles->enregistrer($salle);
 
         header('Location: /salles/' . $salle->id);
@@ -124,3 +157,29 @@ final class SalleController
         return $this->renderer->render('layout/base', ['titre' => $titre, 'contenu' => $contenu]);
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

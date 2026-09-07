@@ -1,9 +1,7 @@
 <?php
-
-
+declare(strict_types=1);
 namespace App\DTO;
 
-use DateTimeImmutable;
 
 final class CreerReservationDTO
 {
@@ -12,9 +10,13 @@ final class CreerReservationDTO
         public readonly string $responsable,
         public readonly string $email,
         public readonly string $motif,
-        public readonly DateTimeImmutable $dateDebut,
-        public readonly DateTimeImmutable $dateFin,
+        public readonly \DateTimeImmutable $dateDebut,
+        public readonly \DateTimeImmutable $dateFin,
     ) {
+    }
+     public static function builder(): CreerReservationDTOBuilder
+    {
+        return new CreerReservationDTOBuilder();
     }
 
     public static function depuisTableau(array $data): self
@@ -24,8 +26,8 @@ final class CreerReservationDTO
             responsable: (string) $data['responsable'],
             email: (string) $data['email'],
             motif: (string) $data['motif'],
-            dateDebut: new DateTimeImmutable((string) $data['date_debut']),
-            dateFin: new DateTimeImmutable((string) $data['date_fin']),
+            dateDebut: new \DateTimeImmutable((string) $data['date_debut']),
+            dateFin: new \DateTimeImmutable((string) $data['date_fin']),
         );
     }
 }
