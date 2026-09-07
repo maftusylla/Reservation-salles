@@ -13,6 +13,7 @@ use App\Validation\ReservationValidator;
 use App\Validation\SalleValidator;
 use App\View\Renderer;
 use FastRoute\Dispatcher;
+use FastRoute\RouteCollector;
 
 use function FastRoute\simpleDispatcher;
 
