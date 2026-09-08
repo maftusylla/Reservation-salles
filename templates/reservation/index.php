@@ -26,7 +26,9 @@
             <td><?= htmlspecialchars($reservation->responsable) ?></td>
             <td><?= htmlspecialchars($reservation->date_debut->format('d/m/Y H:i')) ?></td>
             <td><?= htmlspecialchars($reservation->date_fin->format('d/m/Y H:i')) ?></td>
-            <td><?= htmlspecialchars($reservation->statut) ?></td>
+            <td><span class="badge badge-<?= $reservation->statut === 'confirmée' ? 'succes' : 'annule' ?>">
+    <?= htmlspecialchars($reservation->statut) ?>
+</span></td>
             <td><a href="/reservations/<?= $reservation->id ?>">Voir</a></td>
         </tr>
         <?php endforeach; ?>

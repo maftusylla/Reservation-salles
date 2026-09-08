@@ -9,7 +9,9 @@
         <li>Motif : <?= htmlspecialchars($reservation->motif) ?></li>
         <li>Début : <?= htmlspecialchars($reservation->date_debut->format('d/m/Y H:i')) ?></li>
         <li>Fin : <?= htmlspecialchars($reservation->date_fin->format('d/m/Y H:i')) ?></li>
-        <li>Statut : <?= htmlspecialchars($reservation->statut) ?></li>
+        <li>Statut : <span class="badge badge-<?= $reservation->statut === 'confirmée' ? 'succes' : 'annule' ?>">
+    <?= htmlspecialchars($reservation->statut) ?>
+</span></li>
     </ul>
 
     <?php if ($reservation->statut === 'confirmée'): ?>

@@ -1,0 +1,238 @@
+@startuml Diagramme de classes - Réservation de salles
+
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam roundcorner 5
+
+package "Model" {
+    class Salle {
+        +id: int
+        +nom: string
+        +batiment: string
+        +capacite: int
+        +type: string
+        +active: bool
+        +reservations(): HasMany
+    }
+
+    class Reservation {
+        +id: int
+        +salle_id: int
+        +responsable: string
+        +email: string
+        +motif: string
+        +date_debut: DateTimeImmutable
+        +date_fin: DateTimeImmutable
+        +statut: string
+        +salle(): BelongsTo
+    }
+
+    Salle "1" -- "0..*" Reservation : possède >
+}
+
+package "Repository" {
+    interface SalleRepositoryInterface {
+        +lister(): Salle[]
+        +trouver(id: int): ?Salle
+        +enregistrer(salle: Salle): Salle
+    }
+
+    interface ReservationRepositoryInterface {
+        +lister(): Reservation[]
+        +trouver(id: int): ?Reservation
+        +rechercherConflit(salleId, debut, fin): ?Reservation
+        +enregistrer(reservation: Reservation): Reservation
+        +annuler(reservation: Reservation): Reservation
+    }
+
+    class EloquentSalleRepository {
+        +lister(): Salle[]
+        +trouver(id: int): ?Salle
+        +enregistrer(salle: Salle): Salle
+    }
+
+    class EloquentReservationRepository {
+        +lister(): Reservation[]
+        +trouver(id: int): ?Reservation
+        +rechercherConflit(salleId, debut, fin): ?Reservation
+        +enregistrer(reservation: Reservation): Reservation
+        +annuler(reservation: Reservation): Reservation
+    }
+
+    SalleRepositoryInterface <|.. EloquentSalleRepository
+    ReservationRepositoryInterface <|.. EloquentReservationRepository
+    EloquentSalleRepository ..> Salle
+    EloquentReservationRepository ..> Reservation
+}
+
+package "Validation" {
+    interface ValidatorInterface {
+        +validate(data: array): ValidationResult
+    }
+
+    class ValidationResult {
+        -valid: bool
+        -errors: array
+        -data: array
+        +isValid(): bool
+        +errors(): array
+        +data(): array
+    }
+
+    class SalleValidator {
+        +validate(data: array): ValidationResult
+    }
+
+    class ReservationValidator {
+        +validate(data: array): ValidationResult
+    }
+
+    ValidatorInterface <|.. SalleValidator
+    ValidatorInterface <|.. ReservationValidator
+    SalleValidator ..> ValidationResult
+    ReservationValidator ..> ValidationResult
+}
+
+package "DTO" {
+    class CreerSalleDTO {
+        +nom: string
+        +batiment: string
+        +capacite: int
+        +type: string
+        +active: bool
+        +{static} builder(): CreerSalleDTOBuilder
+    }
+
+    class CreerSalleDTOBuilder {
+        -data: array
+        +avecNom(nom: string): self
+        +avecBatiment(batiment: string): self
+        +avecCapacite(capacite: mixed): self
+        +avecType(type: string): self
+        +avecActive(active: mixed): self
+        +build(): CreerSalleDTO
+    }
+
+    class CreerReservationDTO {
+        +salleId: int
+        +responsable: string
+        +email: string
+        +motif: string
+        +dateDebut: DateTimeImmutable
+        +dateFin: DateTimeImmutable
+        +{static} builder(): CreerReservationDTOBuilder
+    }
+
+    class CreerReservationDTOBuilder {
+        -data: array
+        +avecSalleId(id: mixed): self
+        +avecResponsable(nom: string): self
+        +avecEmail(email: string): self
+        +avecMotif(motif: string): self
+        +avecDateDebut(date: string): self
+        +avecDateFin(date: string): self
+        +build(): CreerReservationDTO
+    }
+
+    CreerSalleDTOBuilder ..> SalleValidator : utilise
+    CreerSalleDTOBuilder ..> CreerSalleDTO : construit
+    CreerReservationDTOBuilder ..> ReservationValidator : utilise
+    CreerReservationDTOBuilder ..> CreerReservationDTO : construit
+}
+
+package "Exception" {
+    class SalleIndisponibleException
+    class ReservationIntrouvableException
+    class ValidationEchoueeException {
+        -resultat: ValidationResult
+        +resultat(): ValidationResult
+    }
+
+    ValidationEchoueeException ..> ValidationResult
+}
+
+package "Service" {
+    class CreerReservationService {
+        -salles: SalleRepositoryInterface
+        -reservations: ReservationRepositoryInterface
+        +executer(dto: CreerReservationDTO): Reservation
+    }
+
+    class AnnulerReservationService {
+        -reservations: ReservationRepositoryInterface
+        +executer(id: int): Reservation
+    }
+
+    CreerReservationService --> SalleRepositoryInterface
+    CreerReservationService --> ReservationRepositoryInterface
+    CreerReservationService ..> CreerReservationDTO
+    CreerReservationService ..> SalleIndisponibleException
+    AnnulerReservationService --> ReservationRepositoryInterface
+    AnnulerReservationService ..> ReservationIntrouvableException
+}
+
+package "Controller" {
+    class SalleController {
+        -salles: SalleRepositoryInterface
+        -renderer: Renderer
+        +index(): string
+        +show(id: int): string
+        +create(): string
+        +store(): string
+        +edit(id: int): string
+        +update(id: int): string
+    }
+
+    class ReservationController {
+        -reservations: ReservationRepositoryInterface
+        -salles: SalleRepositoryInterface
+        -creerReservation: CreerReservationService
+        -annulerReservation: AnnulerReservationService
+        -renderer: Renderer
+        +index(): string
+        +show(id: int): string
+        +create(): string
+        +store(): string
+        +cancel(id: int): string
+    }
+
+    SalleController --> SalleRepositoryInterface
+    SalleController ..> CreerSalleDTOBuilder
+    ReservationController --> ReservationRepositoryInterface
+    ReservationController --> SalleRepositoryInterface
+    ReservationController --> CreerReservationService
+    ReservationController --> AnnulerReservationService
+    ReservationController ..> CreerReservationDTOBuilder
+}
+
+package "View" {
+    class Renderer {
+        -templatesPath: string
+        +render(template: string, data: array): string
+    }
+}
+
+package "Migration" {
+    interface MigrationInterface {
+        +up(schema: Builder): void
+        +down(schema: Builder): void
+    }
+}
+
+package "Seeder" {
+    interface SeederInterface {
+        +run(): void
+    }
+}
+
+package "App" {
+    class Application {
+        -container: ContainerInterface
+        +run(): void
+    }
+
+    Application --> SalleController
+    Application --> ReservationController
+}
+
+@enduml

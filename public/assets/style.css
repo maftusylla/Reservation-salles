@@ -1,0 +1,289 @@
+* {
+    box-sizing: border-box;
+}
+
+:root {
+    --couleur-primaire: #4f46e5;
+    --couleur-primaire-hover: #4338ca;
+    --couleur-fond: #f8f9fc;
+    --couleur-carte: #ffffff;
+    --couleur-texte: #1f2937;
+    --couleur-texte-clair: #6b7280;
+    --couleur-bordure: #e5e7eb;
+    --couleur-erreur: #dc2626;
+    --couleur-erreur-fond: #fef2f2;
+    --couleur-succes: #059669;
+    --couleur-succes-fond: #ecfdf5;
+    --rayon: 10px;
+    --ombre: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+    --ombre-hover: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--couleur-fond);
+    color: var(--couleur-texte);
+    line-height: 1.5;
+}
+
+/* --- En-tête --- */
+
+header {
+    background: linear-gradient(135deg, #1f2937, #111827);
+    color: #fff;
+    padding: 1.1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+header h1 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 600;
+}
+
+header a {
+    color: #fff;
+    text-decoration: none;
+}
+
+header nav a {
+    margin-left: 1.75rem;
+    opacity: 0.8;
+    font-size: 0.95rem;
+    padding-bottom: 2px;
+    border-bottom: 2px solid transparent;
+    transition: opacity 0.15s ease, border-color 0.15s ease;
+}
+
+header nav a:hover {
+    opacity: 1;
+    border-bottom-color: var(--couleur-primaire);
+}
+
+/* --- Contenu principal --- */
+
+main {
+    max-width: 960px;
+    margin: 2.5rem auto;
+    padding: 0 1.5rem;
+}
+
+h2 {
+    margin-top: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+}
+
+/* --- Liens --- */
+
+a {
+    color: var(--couleur-primaire);
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+a:hover {
+    color: var(--couleur-primaire-hover);
+    text-decoration: underline;
+}
+
+/* --- Bouton "ajouter" / lien d'action principal --- */
+
+main > a:first-of-type,
+main > a[href$="/create"] {
+    display: inline-block;
+    background: var(--couleur-primaire);
+    color: #fff;
+    padding: 0.55rem 1.1rem;
+    border-radius: var(--rayon);
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 1.25rem;
+    box-shadow: var(--ombre);
+    transition: background 0.15s ease, transform 0.1s ease;
+}
+
+main > a:first-of-type:hover,
+main > a[href$="/create"]:hover {
+    background: var(--couleur-primaire-hover);
+    text-decoration: none;
+    transform: translateY(-1px);
+}
+
+/* --- Tableaux --- */
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    background: var(--couleur-carte);
+    border-radius: var(--rayon);
+    overflow: hidden;
+    box-shadow: var(--ombre);
+}
+
+th, td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--couleur-bordure);
+}
+
+th {
+    background: #f9fafb;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--couleur-texte-clair);
+}
+
+tbody tr {
+    transition: background 0.1s ease;
+}
+
+tbody tr:hover {
+    background: #f9fafb;
+}
+
+tbody tr:last-child td {
+    border-bottom: none;
+}
+
+td a {
+    font-size: 0.9rem;
+    margin-right: 0.75rem;
+}
+
+/* --- Formulaires --- */
+
+form {
+    background: var(--couleur-carte);
+    padding: 1.75rem;
+    border-radius: var(--rayon);
+    box-shadow: var(--ombre);
+    max-width: 480px;
+}
+
+form label {
+    display: block;
+    margin-bottom: 1.1rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--couleur-texte);
+}
+
+form input[type="text"],
+form input[type="email"],
+form input[type="number"],
+form input[type="datetime-local"],
+form select,
+form textarea {
+    display: block;
+    width: 100%;
+    margin-top: 0.4rem;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid var(--couleur-bordure);
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    color: var(--couleur-texte);
+    background: #fff;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+form input:focus,
+form select:focus,
+form textarea:focus {
+    outline: none;
+    border-color: var(--couleur-primaire);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+}
+
+form textarea {
+    min-height: 90px;
+    resize: vertical;
+}
+
+form label:has(input[type="checkbox"]) {
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+}
+
+form input[type="checkbox"] {
+    width: auto;
+    margin-right: 0.6rem;
+    accent-color: var(--couleur-primaire);
+}
+
+button[type="submit"] {
+    background: var(--couleur-primaire);
+    color: #fff;
+    border: none;
+    padding: 0.65rem 1.4rem;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.1s ease;
+}
+
+button[type="submit"]:hover {
+    background: var(--couleur-primaire-hover);
+    transform: translateY(-1px);
+}
+
+button[type="submit"]:active {
+    transform: translateY(0);
+}
+
+/* --- Messages d'erreur --- */
+
+.erreur {
+    color: var(--couleur-erreur);
+    background: var(--couleur-erreur-fond);
+    font-size: 0.85rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    margin: -0.5rem 0 1rem;
+    border-left: 3px solid var(--couleur-erreur);
+}
+
+/* --- Listes de détails --- */
+
+ul {
+    background: var(--couleur-carte);
+    padding: 0.5rem 1.5rem;
+    border-radius: var(--rayon);
+    box-shadow: var(--ombre);
+    list-style: none;
+    max-width: 480px;
+}
+
+ul li {
+    padding: 0.65rem 0;
+    border-bottom: 1px solid var(--couleur-bordure);
+    font-size: 0.95rem;
+}
+
+ul li:last-child {
+    border-bottom: none;
+}
+
+/* --- Badges de statut (réservations) --- */
+
+td:has-text("confirmée") {
+    color: var(--couleur-succes);
+}
+
+/* --- Pages d'erreur (404/405) --- */
+
+main h2 + p {
+    color: var(--couleur-texte-clair);
+    margin-bottom: 1.5rem;
+}

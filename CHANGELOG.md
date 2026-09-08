@@ -1,4 +1,51 @@
+# Changelog
 
+Toutes les modifications notables de ce projet sont documentées ici.
+
+## [1.0.0] - Finalisation
+
+### Ajouté
+- `ARCHITECTURE.md` : analyse des design patterns et principes SOLID appliqués (MVC, Front Controller, Router, Validator/Strategy, DTO/Builder, ORM/Active Record, Repository, Service, injection par constructeur, conteneur/autowiring/IoC)
+- Section "Questions du sujet" dans `README.md` : réponses aux questions posées à chaque étape
+- Diagramme de classes
+
+### Modifié
+- `README.md` complété : prérequis, installation, configuration base, migrations, seeders, lancement serveur, exécution des tests, commandes personnalisées (`fatou`)
+
+## [0.12.0] - Tests
+
+### Ajouté
+- `InMemorySalleRepository` et `InMemoryReservationRepository` : doublures en mémoire des interfaces de Repository, pour tester les services sans MySQL
+- Tests unitaires de `CreerReservationService` : réservation valide, salle inexistante, salle inactive, fin avant début, durée > 4h, date passée, conflit de créneau, réservations voisines sans chevauchement
+- Tests unitaires de `SalleValidator` et `ReservationValidator` : email invalide, responsable vide, capacité négative, type inconnu, date incorrecte
+- Tests d'intégration avec la vraie base : création d'une salle, relation salle/réservations, annulation d'une réservation
+- `tests/bootstrap.php` : connexion SQLite en mémoire permettant à Eloquent de fonctionner dans les tests unitaires sans base réelle
+- `phpunit.xml` : configuration des suites Unit/Integration
+- Dépendance de développement `phpunit/phpunit`
+
+## [0.11.0] - Configuration du conteneur d'injection
+
+### Ajouté
+- `config/eloquent.php` : bootstrap Eloquent centralisé (connexion, `setAsGlobal`, `bootEloquent`), réutilisé par le conteneur et les scripts CLI
+- `config/container.php` : définitions PHP-DI (autowiring pour les repositories Eloquent, définitions explicites pour les interfaces, factories pour `Capsule\Manager` et `Renderer`)
+- Injection du conteneur (`ContainerInterface`) dans `Application`, seul point de récupération directe d'objets depuis le conteneur
+- Outil CLI personnalisé `fatou` avec les commandes `db:migrate` et `db:seed`
+
+### Modifié
+- `public/index.php` simplifié : construction du conteneur puis délégation à `Application::run()`
+- `Application::run()` : résolution des contrôleurs via le conteneur au lieu d'un `new` manuel
+- `database/migrate.php` et `database/seed.php` : réutilisent `config/eloquent.php` au lieu de dupliquer le bootstrap Eloquent
+
+### Refactorisé
+- Validation déplacée des contrôleurs vers les DTO : `CreerSalleDTO`/`CreerReservationDTO` construits via `CreerSalleDTOBuilder`/`CreerReservationDTOBuilder` (pattern Builder), qui déclenchent la validation dans `build()` et lèvent `ValidationEchoueeException` en cas d'échec (écart assumé par rapport à la séparation Validator/DTO suggérée par le sujet — voir `ARCHITECTURE.md`)
+- Migrations restructurées : une classe par table (`database/migrations/001_creer_table_salles.php`, `002_creer_table_reservations.php`), implémentant `App\Migration\MigrationInterface` (`up`/`down`), orchestrées par `database/migrate.php` (tri par préfixe numérique)
+- Seeders restructurés sur le même principe : `database/seeders/001_seeder_salles.php` implémentant `App\Seeder\SeederInterface`, orchestré par `database/seed.php`
+
+## [0.10.0] - Configuration du routeur
+
+### Ajouté
+- `routes/web.php` : déclaration de toutes les routes (salles et réservations)
+- Dispatch FastRoute dans `Application::run()`, avec gestion de `FOUND`, `NOT_FOUND` (404) et `METHOD_NOT_ALLOWED` (405 + en-tête `Allow`)
 
 ## [0.9.0] - Interface web
 
@@ -49,7 +96,7 @@
 ### Ajouté
 - `.env.example` et chargement des variables d'environnement (phpdotenv)
 - `config/database.php`
-- `database/migrations/migration.php` : connexion via `Capsule\Manager` et création des tables `salles`/`reservations`
+- Bootstrap Eloquent initial et création des tables `salles`/`reservations`
 
 ## [0.1.0] - Initialisation du projet Composer
 
