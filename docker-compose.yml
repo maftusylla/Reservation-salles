@@ -1,0 +1,47 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: reservation_app
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      - db
+    networks:
+      - reservation_network
+
+  webserver:
+    image: nginx:stable-alpine
+    container_name: reservation_nginx
+    ports:
+      - "8000:80"
+    volumes:
+      - .:/var/www/html
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
+    networks:
+      - reservation_network
+
+  db:
+    image: mysql:8.0
+    container_name: reservation_db
+    environment:
+      MYSQL_DATABASE: reservation_salles
+      MYSQL_USER: reservation_user
+      MYSQL_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3307:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - reservation_network
+
+networks:
+  reservation_network:
+    driver: bridge
+
+volumes:
+  db_data:
