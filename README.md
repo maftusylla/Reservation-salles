@@ -139,3 +139,30 @@ Pour éviter que chaque classe ait une dépendance cachée au conteneur lui-mêm
 
 **Quel anti-pattern apparaît si toutes les classes interrogent le conteneur ?**
 Le *Service Locator* : les dépendances d'une classe deviennent invisibles (cachées derrière `$container->get(...)`), rendant le code plus difficile à tester et à comprendre, puisqu'on ne sait plus de quoi une classe a réellement besoin sans lire tout son code.
+
+
+## Utilisation avec Docker (bonus)
+
+Ce projet peut aussi être lancé entièrement via Docker, sans installer PHP/MySQL localement.
+
+### Prérequis
+- Docker et Docker Compose
+
+### Démarrage
+
+```bash
+cp .env.docker.example .env
+docker compose build
+docker compose up -d
+docker compose exec app php fatou db:migrate
+docker compose exec app php fatou db:seed
+```
+
+L'application est accessible sur http://localhost:8000
+
+### Arrêt
+
+```bash
+docker compose down          # garde les données
+docker compose down -v       # supprime aussi les données MySQL
+```
