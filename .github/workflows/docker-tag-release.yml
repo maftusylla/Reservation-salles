@@ -59,4 +59,21 @@ jobs:
 
       - name: Injecter la configuration Docker dans le snapshot
         run: |
-          mkdir -p
+          mkdir -p app/docker/php
+          mkdir -p app/docker/nginx
+          cp docker-config/docker/php/Dockerfile app/docker/php/Dockerfile
+          cp docker-config/docker/nginx/default.conf app/docker/nginx/default.conf
+
+      - name: Login Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build et push
+        uses: docker/build-push-action@v6
+        with:
+          context: app
+          file: app/docker/php/Dockerfile
+          push: true
+          tags: mamefatousylla/reservation-salles:${{ matrix.tag }}
