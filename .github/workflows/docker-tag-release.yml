@@ -1,0 +1,62 @@
+name: Docker Build & Push
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      tags:
+        description: "Tags à construire, séparés par un espace (laisser vide = tous les tags v*.*.*)"
+        required: false
+        default: ""
+
+jobs:
+  list-tags:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Construire la liste des tags à traiter
+        id: set-matrix
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            LISTE="${{ github.ref_name }}"
+          elif [ -n "${{ github.event.inputs.tags }}" ]; then
+            LISTE="${{ github.event.inputs.tags }}"
+          else
+            LISTE=$(git tag -l 'v*.*.*' | tr '\n' ' ')
+          fi
+          echo "Tags à traiter : $LISTE"
+          MATRICE=$(echo $LISTE | tr ' ' '\n' | jq -R -s -c 'split("\n")[:-1]')
+          echo "matrix=$MATRICE" >> "$GITHUB_OUTPUT"
+
+  build-and-push:
+    needs: list-tags
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        tag: ${{ fromJson(needs.list-tags.outputs.matrix) }}
+    steps:
+      - name: Checkout du code applicatif (${{ matrix.tag }})
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.tag }}
+          path: app
+
+      - name: Checkout de la configuration Docker (branche main)
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: docker-config
+
+      - name: Injecter la configuration Docker dans le snapshot
+        run: |
+          mkdir -p
