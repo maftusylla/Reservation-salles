@@ -14,16 +14,14 @@ WORKDIR /var/www/html
 
 COPY . .
 
-RUN composer install --optimize-autoloader --no-interaction
-
-RUN chown -R www-data:www-data /var/www/html
-
 RUN if [ -f composer.json ]; then \
         composer install --no-interaction --prefer-dist --optimize-autoloader \
         || composer update --no-interaction --prefer-dist --optimize-autoloader; \
     else \
         echo "Aucun composer.json dans ce tag : installation Composer ignorée."; \
     fi
+
+RUN chown -R www-data:www-data /var/www/html
 
 EXPOSE 9000
 
