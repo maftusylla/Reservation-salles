@@ -11,7 +11,10 @@ use App\Repository\ReservationRepositoryInterface;
 use App\Repository\SalleRepositoryInterface;
 use App\Service\AnnulerReservationService;
 use App\Service\CreerReservationService;
+use App\Validation\ReservationValidator;
 use App\View\Renderer;
+use App\View\ViewFormatterInterface;
+use Tests\Unit\ReservationValidatorTest;
 
 final class ReservationController
 {
@@ -20,7 +23,9 @@ final class ReservationController
     private readonly SalleRepositoryInterface $salles,
     private readonly CreerReservationService $creerReservation,
     private readonly AnnulerReservationService $annulerReservation,
-    private readonly Renderer $renderer,
+    private readonly ViewFormatterInterface $formatter,
+    private readonly ReservationValidator $reservation_validator,
+
 ) {
 }
 
@@ -78,7 +83,7 @@ final class ReservationController
     ];
 
     try {
-        $dto = CreerReservationDTO::builder()
+        $dto = CreerReservationDTO::builder($this->reservation_validator)
             ->avecSalleId($data['salle_id'])
             ->avecResponsable($data['responsable'])
             ->avecEmail($data['email'])
@@ -121,10 +126,7 @@ final class ReservationController
     }
 
     private function page(string $titre, string $vue, array $data = [], int $code = 200): string
-    {
-        http_response_code($code);
-        $contenu = $this->renderer->render($vue, $data);
-
-        return $this->renderer->render('layout/base', ['titre' => $titre, 'contenu' => $contenu]);
-    }
+{
+    return $this->formatter->repondre($titre, $vue, $data, $code);
+}
 }

@@ -7,16 +7,9 @@ namespace Tests\Integration;
 use App\Model\Reservation;
 use App\Model\Salle;
 use DateTimeImmutable;
-use PHPUnit\Framework\TestCase;
 
-final class SalleReservationIntegrationTest extends TestCase
+final class SalleReservationIntegrationTest extends IntegrationTestCase
 {
-    protected function setUp(): void
-    {
-        $demarrerEloquent = require dirname(__DIR__, 2) . '/config/eloquent.php';
-        $demarrerEloquent();
-    }
-
     public function testCreationSalleAvecEloquent(): void
     {
         $salle = Salle::create([

@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Model\Salle;
 use App\DTO\CreerSalleDTO;
 use App\DTO\CreerSalleDTOBuilder;
 use App\Exception\ValidationEchoueeException;
+use App\Model\Salle;
 use App\Repository\SalleRepositoryInterface;
+use App\Validation\SalleValidator;
 use App\View\Renderer;
+use App\View\ViewFormatterInterface;
+
 
 
 
@@ -18,7 +21,8 @@ final class SalleController
 {
     public function __construct(
         private readonly SalleRepositoryInterface $salles,
-        private readonly Renderer $renderer,
+    private readonly ViewFormatterInterface $formatter,
+        private readonly SalleValidator $salle_validator,
     ) {
     }
 
@@ -54,7 +58,7 @@ final class SalleController
         $data = $this->donneesFormulaire();
 
         try {
-            $dto = CreerSalleDTO::builder()
+            $dto = CreerSalleDTO::builder($this->salle_validator)
                 ->avecNom($data['nom'])
                 ->avecBatiment($data['batiment'])
                 ->avecCapacite($data['capacite'])
@@ -109,7 +113,7 @@ final class SalleController
         $data = $this->donneesFormulaire();
 
         try {
-            $dto = CreerSalleDTO::builder()
+            $dto = CreerSalleDTO::builder($this->salle_validator)
                 ->avecNom($data['nom'])
                 ->avecBatiment($data['batiment'])
                 ->avecCapacite($data['capacite'])
@@ -149,13 +153,10 @@ final class SalleController
         ];
     }
 
-    private function page(string $titre, string $vue, array $data = [], int $code = 200): string
-    {
-        http_response_code($code);
-        $contenu = $this->renderer->render($vue, $data);
-
-        return $this->renderer->render('layout/base', ['titre' => $titre, 'contenu' => $contenu]);
-    }
+ private function page(string $titre, string $vue, array $data = [], int $code = 200): string
+{
+    return $this->formatter->repondre($titre, $vue, $data, $code);
+}
 }
 
 

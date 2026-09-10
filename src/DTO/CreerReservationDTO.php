@@ -2,6 +2,8 @@
 declare(strict_types=1);
 namespace App\DTO;
 
+use App\Validation\ReservationValidator;
+
 
 final class CreerReservationDTO
 {
@@ -14,9 +16,9 @@ final class CreerReservationDTO
         public readonly \DateTimeImmutable $dateFin,
     ) {
     }
-     public static function builder(): CreerReservationDTOBuilder
+     public static function builder(ReservationValidator $validator): CreerReservationDTOBuilder
     {
-        return new CreerReservationDTOBuilder();
+        return new CreerReservationDTOBuilder($validator);
     }
 
     public static function depuisTableau(array $data): self

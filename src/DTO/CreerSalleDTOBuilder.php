@@ -6,9 +6,15 @@ namespace App\DTO;
 use App\Exception\ValidationEchoueeException;
 use App\Validation\SalleValidator;
 
+
 final class CreerSalleDTOBuilder
 {
     private array $data = [];
+    
+    public function __construct(
+        private readonly SalleValidator $validator
+    ) {
+    }
 
     public function avecNom(string $nom): self
     {
@@ -50,8 +56,7 @@ final class CreerSalleDTOBuilder
      */
     public function build(): CreerSalleDTO
     {
-        $validator = new SalleValidator();
-        $resultat = $validator->validate($this->data);
+        $resultat = $this->validator->validate($this->data);
 
         if (! $resultat->isValid()) {
             throw new ValidationEchoueeException($resultat);

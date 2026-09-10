@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\DTO;
 
 use App\DTO\CreerSalleDTOBuilder;
+use App\Validation\SalleValidator;
 
 final class CreerSalleDTO
 {
@@ -17,9 +18,9 @@ final class CreerSalleDTO
     ) {
     }
 
-      public static function builder(): CreerSalleDTOBuilder
+      public static function builder(SalleValidator $validator): CreerSalleDTOBuilder
     {
-        return new CreerSalleDTOBuilder();
+        return new CreerSalleDTOBuilder($validator);
     }
 
     public static function depuisTableau(array $data): self
