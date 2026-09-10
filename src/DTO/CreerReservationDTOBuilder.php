@@ -6,12 +6,17 @@ namespace App\DTO;
 
 use App\Exception\ValidationEchoueeException;
 use App\Validation\ReservationValidator;
-use App\DTO\CreerReservationDTO;
+
 
 
 final class CreerReservationDTOBuilder
 {
     private array $data = [];
+
+    public function __construct(
+        private readonly ReservationValidator $validator
+    ) {
+    }
 
     public function avecSalleId(mixed $salleId): self
     {
@@ -40,7 +45,7 @@ final class CreerReservationDTOBuilder
 
         return $this;
     }
-
+    
     public function avecDateDebut(string $dateDebut): self
     {
         $this->data['date_debut'] = $dateDebut;
@@ -60,9 +65,7 @@ final class CreerReservationDTOBuilder
      */
     public function build(): CreerReservationDTO
     {
-        $validator = new ReservationValidator();
-        $resultat = $validator->validate($this->data);
-
+            $resultat = $this->validator->validate($this->data);
         if (! $resultat->isValid()) {
             throw new ValidationEchoueeException($resultat);
         }
