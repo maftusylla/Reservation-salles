@@ -21,9 +21,16 @@ switch ($commande) {
     case 'db:seed':
         require __DIR__ . '/database/seed.php';
         break;
+        
+    case 'admin:promote':
+    $_SERVER['argv'] = array_slice($argv, 1);
+    require __DIR__ . '/database/promote-admin.php';
+    break;
 
     default:
         fwrite(STDERR, "Commande inconnue: $commande\n");
         fwrite(STDERR, "Commandes disponibles: db:migrate, db:seed\n");
         exit(1);
 }
+
+

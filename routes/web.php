@@ -5,6 +5,9 @@ declare(strict_types=1);
 use App\Controller\ReservationController;
 use App\Controller\SalleController;
 use FastRoute\RouteCollector;
+use App\Controller\AuthController;
+use App\Middleware\AdminMiddleware;
+use App\Middleware\AuthMiddleware;
 
 return function (RouteCollector $r): void {
     $r->addRoute('GET', '/', [SalleController::class, 'index']);
@@ -21,4 +24,16 @@ return function (RouteCollector $r): void {
     $r->addRoute('POST', '/reservations', [ReservationController::class, 'store']);
     $r->addRoute('GET', '/reservations/{id:\d+}', [ReservationController::class, 'show']);
     $r->addRoute('POST', '/reservations/{id:\d+}/cancel', [ReservationController::class, 'cancel']);
+
+    $r->addRoute('GET', '/inscription', [AuthController::class, 'formulaireInscription']);
+    $r->addRoute('POST', '/inscription', [AuthController::class, 'inscrire']);
+    $r->addRoute('GET', '/connexion', [AuthController::class, 'formulaireConnexion']);
+    $r->addRoute('POST', '/connexion', [AuthController::class, 'connecter']);
+    $r->addRoute('POST', '/deconnexion', [[AuthMiddleware::class], AuthController::class, 'deconnecter']);
+
+
+    $r->addRoute('POST', '/salles/{id:\d+}/toggle-active', [[AuthMiddleware::class, AdminMiddleware::class], SalleController::class, 'toggleActive']);
 };
+
+
+

@@ -18,4 +18,15 @@ final class HtmlViewFormatter implements ViewFormatterInterface
 
         return $this->renderer->render('layout/base', ['titre' => $titre, 'contenu' => $contenu]);
     }
+
+    public function succes(string $url, array $donnees = [], int $code = 200): string
+    {
+        header('Location: ' . $url);
+        exit;
+    }
+
+    public function echecValidation(array $errors, string $titre, string $vue, array $contexte = [], int $code = 422): string
+    {
+        return $this->repondre($titre, $vue, array_merge($contexte, ['errors' => $errors]));
+    }
 }

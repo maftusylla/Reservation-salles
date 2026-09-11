@@ -28,12 +28,12 @@ services:
     image: mysql:8.0
     container_name: reservation_db
     environment:
-      MYSQL_DATABASE: reservation_salles
-      MYSQL_USER: reservation_user
-      MYSQL_PASSWORD: root
-      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     ports:
-      - "3307:3306"
+      - "${DB_HOST_PORT}:${DB_PORT}"
     volumes:
       - db_data:/var/lib/mysql
     networks:
@@ -43,11 +43,12 @@ services:
     image: phpmyadmin:latest
     container_name: reservation_phpmyadmin
     environment:
-      PMA_HOST: db
-      PMA_USER: reservation_user
-      PMA_PASSWORD: root
+      PMA_HOST: ${PMA_HOST}
+      PMA_USER: ${PMA_USER}
+      PMA_PASSWORD: ${PMA_PASSWORD}
     ports:
-      - "8080:80"
+      - "${PMA_PORT}:80"
+
     depends_on:
       - db
     networks:

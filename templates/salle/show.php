@@ -11,3 +11,8 @@
 <a href="/salles/<?= $salle->id ?>/edit">Modifier</a>
 <a href="/reservations?salle_id=<?= $salle->id ?>">Voir ses réservations</a>
 <?php endif; ?>
+<?php if (isset($utilisateurConnecte) && $utilisateurConnecte !== null && $utilisateurConnecte->role === 'admin'): ?>
+    <form method="post" action="/salles/<?= $salle->id ?>/toggle-active">
+        <button type="submit"><?= $salle->active ? 'Désactiver' : 'Activer' ?> cette salle</button>
+    </form>
+<?php endif; ?>

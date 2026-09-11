@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App;
 
+use App\Middleware\MiddlewarePipeline;
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
 use Psr\Container\ContainerInterface;
@@ -14,8 +15,7 @@ final class Application
 {
     public function __construct(
         private readonly ContainerInterface $container,
-    ) {
-    }
+    ) {}
 
     public function run(): void
     {
@@ -45,14 +45,37 @@ final class Application
                 break;
 
             case Dispatcher::FOUND:
-                [$controllerClass, $methode] = $routeInfo[1];
+                $handler = $routeInfo[1];
                 $parametres = array_map('intval', $routeInfo[2]);
 
-                $controleur = $this->container->get($controllerClass);
+                [$middlewaresRoute, $controllerClass, $methode] = $this->normaliserHandler($handler);
 
-                echo $controleur->$methode(...$parametres);
+                $middlewarePath = dirname(__DIR__) . '/config/middleware.php';
+                $middlewareConfig = is_file($middlewarePath) ? require $middlewarePath : ['globaux' => []];
+                $tousLesMiddlewares = array_merge($middlewareConfig['globaux'] ?? [], $middlewaresRoute);
+
+                $pipeline = new MiddlewarePipeline($this->container);
+
+                echo $pipeline->traiter($tousLesMiddlewares, function () use ($controllerClass, $methode, $parametres): string {
+                    $controleur = $this->container->get($controllerClass);
+
+                    return $controleur->$methode(...$parametres);
+                });
                 break;
         }
+    }
+
+    private function normaliserHandler(array $handler): array
+    {
+        if (isset($handler[0]) && is_array($handler[0])) {
+            return [$handler[0], $handler[1], $handler[2]];
+        }
+
+        if (isset($handler[0], $handler[1])) {
+            return [[], $handler[0], $handler[1]];
+        }
+
+        throw new \InvalidArgumentException('Format de handler de route invalide.');
     }
 
     private function page404(): string

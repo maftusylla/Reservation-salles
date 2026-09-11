@@ -12,6 +12,8 @@ use App\View\HtmlViewFormatter;
 use App\View\JsonViewFormatter;
 use App\View\Renderer;
 use App\View\ViewFormatterInterface;
+use App\Repository\UtilisateurRepositoryInterface;
+use App\Repository\EloquentUtilisateurRepository;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
 use function DI\autowire;
@@ -25,6 +27,7 @@ return [
     ReservationRepositoryInterface::class => autowire(EloquentReservationRepository::class),
     ReservationValidator::class=>autowire(),
     SalleValidator::class=>autowire(),
+    UtilisateurRepositoryInterface::class => autowire(EloquentUtilisateurRepository::class),
 
     Capsule::class => factory(function (): Capsule {
         $demarrerEloquent = require __DIR__ . '/eloquent.php';
@@ -40,3 +43,7 @@ return [
     ),
     
 ];
+
+
+
+

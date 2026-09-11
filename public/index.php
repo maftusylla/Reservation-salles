@@ -2,13 +2,14 @@
 
 declare(strict_types=1);
 
-session_start();
-
 use App\Application;
-use Dotenv\Dotenv;
+use App\Core\SessionManager;
 use DI\ContainerBuilder;
+use Dotenv\Dotenv;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
+
+SessionManager::getInstance();
 
 $dotenv = Dotenv::createImmutable(dirname(__DIR__));
 $dotenv->load();
