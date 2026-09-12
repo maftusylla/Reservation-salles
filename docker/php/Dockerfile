@@ -14,8 +14,6 @@ WORKDIR /var/www/html
 
 COPY . .
 
-
-
 RUN if [ -f composer.json ]; then \
         composer install --no-interaction --prefer-dist --optimize-autoloader \
         || composer update --no-interaction --prefer-dist --optimize-autoloader; \
