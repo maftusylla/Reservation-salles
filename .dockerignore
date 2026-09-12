@@ -1,0 +1,6 @@
+.env
+.git
+.gitignore
+vendor
+tests
+docker-compose.yml

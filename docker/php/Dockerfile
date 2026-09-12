@@ -1,7 +1,6 @@
 FROM php:8.3-fpm
 
 RUN apt-get update && apt-get install -y \
-    git \
     unzip \
     libzip-dev \
     libonig-dev \
@@ -12,17 +11,20 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
+COPY composer.json composer.lock ./
+
+RUN composer install \
+    --no-dev \
+    --no-interaction \
+    --prefer-dist \
+    --optimize-autoloader
+
 COPY . .
 
-RUN if [ -f composer.json ]; then \
-        composer install --no-interaction --prefer-dist --optimize-autoloader \
-        || composer update --no-interaction --prefer-dist --optimize-autoloader; \
-    else \
-        echo "Aucun composer.json dans ce tag : installation Composer ignorée."; \
-    fi
+COPY docker/ssl/ca.pem /etc/ssl/aiven/ca.pem
 
 RUN chown -R www-data:www-data /var/www/html
 
-EXPOSE 9000
+EXPOSE 10000
 
-CMD ["php-fpm"]
+CMD ["sh", "-c", "php -S 0.0.0.0:${PORT:-10000} -t public"]
