@@ -34,3 +34,21 @@
         <?php endforeach; ?>
     </tbody>
 </table>
+</table>
+
+<?php
+$parametresPage = static fn (int $page): string => http_build_query(array_filter([
+    'salle_id' => $salleId ?? null,
+    'page'     => $page,
+]));
+?>
+
+<?php if (($pageActuelle ?? 1) > 1): ?>
+    <a href="/reservations?<?= $parametresPage(($pageActuelle ?? 1) - 1) ?>">Précédent</a>
+<?php endif; ?>
+
+<span>Page <?= $pageActuelle ?? 1 ?> / <?= $dernierePage ?? 1 ?></span>
+
+<?php if (($pageActuelle ?? 1) < ($dernierePage ?? 1)): ?>
+    <a href="/reservations?<?= $parametresPage(($pageActuelle ?? 1) + 1) ?>">Suivant</a>
+<?php endif; ?>

@@ -16,7 +16,7 @@ final class AuthService
         private readonly UtilisateurRepositoryInterface $utilisateurs,
     ) {
     }
-
+ 
     public function inscrire(string $nom, string $email, string $motDePasse): Utilisateur
     {
         if ($this->utilisateurs->trouverParEmail($email) !== null) {

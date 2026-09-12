@@ -21,7 +21,7 @@ final class Application
     {
         $this->container->get(\Illuminate\Database\Capsule\Manager::class);
 
-        $routes = require dirname(__DIR__) . '/routes/web.php';
+        $routes = require_once dirname(__DIR__) . '/routes/web.php';
 
         $dispatcher = simpleDispatcher(function (RouteCollector $r) use ($routes): void {
             $routes($r);
@@ -51,7 +51,7 @@ final class Application
                 [$middlewaresRoute, $controllerClass, $methode] = $this->normaliserHandler($handler);
 
                 $middlewarePath = dirname(__DIR__) . '/config/middleware.php';
-                $middlewareConfig = is_file($middlewarePath) ? require $middlewarePath : ['globaux' => []];
+                $middlewareConfig = is_file($middlewarePath) ? require_once $middlewarePath : ['globaux' => []];
                 $tousLesMiddlewares = array_merge($middlewareConfig['globaux'] ?? [], $middlewaresRoute);
 
                 $pipeline = new MiddlewarePipeline($this->container);

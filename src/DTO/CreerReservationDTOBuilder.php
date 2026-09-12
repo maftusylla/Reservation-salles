@@ -12,10 +12,21 @@ use App\Validation\ReservationValidator;
 final class CreerReservationDTOBuilder
 {
     private array $data = [];
+    private string $titre = 'Formulaire invalide';
+    private string $vue = 'reservation/form';
+    private array $contexte = [];
 
     public function __construct(
         private readonly ReservationValidator $validator
     ) {
+    }
+    public function avecContexte(string $titre, string $vue, array $contexte = []): self
+    {
+        $this->titre = $titre;
+        $this->vue = $vue;
+        $this->contexte = $contexte;
+
+        return $this;
     }
 
     public function avecSalleId(mixed $salleId): self
@@ -60,14 +71,17 @@ final class CreerReservationDTOBuilder
         return $this;
     }
 
-    /**
-     * @throws ValidationEchoueeException
-     */
+  
     public function build(): CreerReservationDTO
     {
-            $resultat = $this->validator->validate($this->data);
-        if (! $resultat->isValid()) {
-            throw new ValidationEchoueeException($resultat);
+        $resultat = $this->validator->validate($this->data);
+         if (! $resultat->isValid()) {
+            throw new ValidationEchoueeException(
+                $resultat,
+                $this->titre,
+                $this->vue,
+                array_merge($this->contexte, ['old' => $this->data])
+            );
         }
 
         return CreerReservationDTO::depuisTableau($resultat->data());

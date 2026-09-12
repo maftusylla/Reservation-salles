@@ -22,6 +22,28 @@ final class InMemoryReservationRepository implements ReservationRepositoryInterf
     {
         return $this->reservations[$id] ?? null;
     }
+        public function listerPagine(?int $salleId, int $page, int $parPage = 10): array
+    {
+        $reservations = array_values($this->reservations);
+
+        if ($salleId !== null) {
+            $reservations = array_values(array_filter(
+                $reservations,
+                static fn (Reservation $r) => $r->salle_id === $salleId
+            ));
+        }
+
+        $total        = count($reservations);
+        $dernierePage = max(1, (int) ceil($total / $parPage));
+        $items        = array_slice($reservations, ($page - 1) * $parPage, $parPage);
+
+        return [
+            'items'         => $items,
+            'page_actuelle' => $page,
+            'derniere_page' => $dernierePage,
+            'total'         => $total,
+        ];
+    }
 
     public function rechercherConflit(int $salleId, DateTimeImmutable $dateDebut, DateTimeImmutable $dateFin): ?Reservation
     {

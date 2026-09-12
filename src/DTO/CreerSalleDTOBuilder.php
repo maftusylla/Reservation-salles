@@ -10,10 +10,21 @@ use App\Validation\SalleValidator;
 final class CreerSalleDTOBuilder
 {
     private array $data = [];
+    private string $titre = 'Formulaire invalide';
+    private string $vue = 'salle/form';
+    private array $contexte = [];
     
     public function __construct(
         private readonly SalleValidator $validator
     ) {
+    }
+    public function avecContexte(string $titre, string $vue, array $contexte = []): self
+    {
+        $this->titre = $titre;
+        $this->vue = $vue;
+        $this->contexte = $contexte;
+
+        return $this;
     }
 
     public function avecNom(string $nom): self
@@ -51,15 +62,18 @@ final class CreerSalleDTOBuilder
         return $this;
     }
 
-    /**
-     * @throws ValidationEchoueeException
-     */
+    
     public function build(): CreerSalleDTO
     {
         $resultat = $this->validator->validate($this->data);
 
         if (! $resultat->isValid()) {
-            throw new ValidationEchoueeException($resultat);
+            throw new ValidationEchoueeException(
+                $resultat,
+                $this->titre,
+                $this->vue,
+                array_merge($this->contexte, ['old' => $this->data])
+            );
         }
 
         return CreerSalleDTO::depuisTableau($resultat->data());

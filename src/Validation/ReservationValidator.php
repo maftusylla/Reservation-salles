@@ -6,7 +6,7 @@ namespace App\Validation;
 use Respect\Validation\Validator as v;
 use Respect\Validation\Exceptions\NestedValidationException;
 
-final class ReservationValidator implements ValidatorInterface
+final class ReservationValidator implements ReservationValidatorInterface
 {
     public function validate(array $data): ValidationResult
     {

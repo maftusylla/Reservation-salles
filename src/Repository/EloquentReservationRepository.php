@@ -12,6 +12,24 @@ final class EloquentReservationRepository implements ReservationRepositoryInterf
     {
         return Reservation::all()->all();
     }
+        public function listerPagine(?int $salleId, int $page, int $parPage = 10): array
+    {
+        $requete = Reservation::query();
+
+        if ($salleId !== null) {
+            $requete->where('salle_id', $salleId);
+        }
+
+        $paginateur = $requete->orderBy('date_debut', 'desc')
+            ->paginate($parPage, ['*'], 'page', $page);
+
+        return [
+            'items'         => $paginateur->items(),
+            'page_actuelle' => $paginateur->currentPage(),
+            'derniere_page' => $paginateur->lastPage(),
+            'total'         => $paginateur->total(),
+        ];
+    }
 
     public function trouver(int $id): ?Reservation
     {

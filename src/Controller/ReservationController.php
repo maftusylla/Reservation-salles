@@ -12,7 +12,7 @@ use App\Repository\ReservationRepositoryInterface;
 use App\Repository\SalleRepositoryInterface;
 use App\Service\AnnulerReservationService;
 use App\Service\CreerReservationService;
-use App\Validation\ReservationValidator;
+use App\Validation\ReservationValidatorInterface;
 use App\View\ViewFormatterInterface;
 
 final class ReservationController extends AbstractController
@@ -23,33 +23,31 @@ final class ReservationController extends AbstractController
         private readonly CreerReservationService $creerReservation,
         private readonly AnnulerReservationService $annulerReservation,
         ViewFormatterInterface $formatter,
-        private readonly ReservationValidator $reservation_validator,
+        private readonly ReservationValidatorInterface $reservation_validator,
     ) {
         parent::__construct($formatter);
     }
 
-    public function index(): string
+        public function index(): string
     {
         $salleId = isset($_GET['salle_id']) && $_GET['salle_id'] !== ''
             ? (int) $_GET['salle_id']
             : null;
 
-        $reservations = $this->reservations->lister();
+        $page = isset($_GET['page']) && ctype_digit((string) $_GET['page'])
+            ? max(1, (int) $_GET['page'])
+            : 1;
 
-        if ($salleId !== null) {
-            $reservations = array_values(array_filter(
-                $reservations,
-                static fn ($reservation) => $reservation->salle_id === $salleId
-            ));
-        }
+        $resultat = $this->reservations->listerPagine($salleId, $page, 5);
 
         return $this->page('Liste des réservations', 'reservation/index', [
-            'reservations' => $reservations,
+            'reservations' => $resultat['items'],
             'salles'       => $this->salles->lister(),
             'salleId'      => $salleId,
+            'pageActuelle' => $resultat['page_actuelle'],
+            'dernierePage' => $resultat['derniere_page'],
         ]);
     }
-
     public function show(int $id): string
     {
         $reservation = $this->reservations->trouver($id);
@@ -81,8 +79,9 @@ final class ReservationController extends AbstractController
             'date_fin'    => $_POST['date_fin'] ?? '',
         ];
 
-        try {
+        
             $dto = CreerReservationDTO::builder($this->reservation_validator)
+                ->avecContexte('Créer une réservation', 'reservation/form', ['salles' => $this->salles->lister()])
                 ->avecSalleId($data['salle_id'])
                 ->avecResponsable($data['responsable'])
                 ->avecEmail($data['email'])
@@ -90,25 +89,9 @@ final class ReservationController extends AbstractController
                 ->avecDateDebut($data['date_debut'])
                 ->avecDateFin($data['date_fin'])
                 ->build();
-        } catch (ValidationEchoueeException $exception) {
-            return $this->echecValidation(
-                $exception->resultat()->errors(),
-                'Créer une réservation',
-                'reservation/form',
-                ['salles' => $this->salles->lister(), 'old' => $data]
-            );
-        }
+        
 
-        try {
-            $reservation = $this->creerReservation->executer($dto);
-        } catch (SalleIndisponibleException $exception) {
-            return $this->echecValidation(
-                ['general' => $exception->getMessage()],
-                'Créer une réservation',
-                'reservation/form',
-                ['salles' => $this->salles->lister(), 'old' => $data]
-            );
-        }
+        $reservation = $this->creerReservation->executer($dto);
 
         return $this->succes('/reservations/' . $reservation->id, $reservation->toArray(), 201);
     }

@@ -11,7 +11,19 @@ final class EloquentSalleRepository implements SalleRepositoryInterface
     {
         return Salle::all()->all();
     }
+        public function listerPagine(int $page, int $parPage = 10): array
+    {
+        $paginateur = Salle::query()
+            ->orderBy('nom')
+            ->paginate($parPage, ['*'], 'page', $page);
 
+        return [
+            'items'         => $paginateur->items(),
+            'page_actuelle' => $paginateur->currentPage(),
+            'derniere_page' => $paginateur->lastPage(),
+            'total'         => $paginateur->total(),
+        ];
+    }
     public function trouver(int $id): ?Salle
     {
         return Salle::find($id);
