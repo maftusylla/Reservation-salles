@@ -20,15 +20,35 @@ try {
 }
 
 $schema = $capsule->schema();
+$connexion = $capsule->getConnection();
+
+if (!$schema->hasTable('migrations')) {
+    $schema->create('migrations', function ($table) {
+        $table->increments('id');
+        $table->string('migration');
+        $table->timestamp('appliquee_le')->useCurrent();
+    });
+    echo "Table 'migrations' créée." . PHP_EOL;
+}
+
+$dejaAppliquees = $connexion->table('migrations')->pluck('migration')->all();
 
 $fichiersMigrations = glob(__DIR__ . '/migrations/*.php');
 sort($fichiersMigrations);
 
 foreach ($fichiersMigrations as $fichier) {
+    $nom = basename($fichier, '.php');
+
+    if (in_array($nom, $dejaAppliquees, true)) {
+        echo "Migration '{$nom}' déjà appliquée, ignorée." . PHP_EOL;
+        continue;
+    }
+
     /** @var MigrationInterface $migration */
     $migration = require $fichier;
 
-    $nom = basename($fichier, '.php');
     $migration->up($schema);
+    $connexion->table('migrations')->insert(['migration' => $nom]);
+
     echo "Migration '{$nom}' appliquée." . PHP_EOL;
 }

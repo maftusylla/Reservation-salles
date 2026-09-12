@@ -20,3 +20,14 @@
         <?php endforeach; ?>
     </tbody>
 </table>
+</table>
+
+<?php if (($pageActuelle ?? 1) > 1): ?>
+    <a href="/salles?page=<?= ($pageActuelle ?? 1) - 1 ?>">Précédent</a>
+<?php endif; ?>
+
+<span>Page <?= $pageActuelle ?? 1 ?> / <?= $dernierePage ?? 1 ?></span>
+
+<?php if (($pageActuelle ?? 1) < ($dernierePage ?? 1)): ?>
+    <a href="/salles?page=<?= ($pageActuelle ?? 1) + 1 ?>">Suivant</a>
+<?php endif; ?>

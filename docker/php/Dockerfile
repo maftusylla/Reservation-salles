@@ -14,7 +14,7 @@ WORKDIR /var/www/html
 
 COPY . .
 
-RUN if [ -f composer.json ]; then \
+RUN if [ -f composer.jso n ]; then \
         composer install --no-interaction --prefer-dist --optimize-autoloader \
         || composer update --no-interaction --prefer-dist --optimize-autoloader; \
     else \

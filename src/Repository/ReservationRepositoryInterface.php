@@ -12,6 +12,8 @@ interface ReservationRepositoryInterface
      * @return Reservation[]
      */
     public function lister(): array;
+    
+    public function listerPagine(?int $salleId, int $page, int $parPage = 10): array;
 
     public function trouver(int $id): ?Reservation;
 
@@ -24,4 +26,5 @@ interface ReservationRepositoryInterface
     public function enregistrer(Reservation $reservation): Reservation;
 
     public function annuler(Reservation $reservation): Reservation;
+
 }

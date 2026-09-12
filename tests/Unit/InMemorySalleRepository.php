@@ -20,6 +20,21 @@ final class InMemorySalleRepository implements SalleRepositoryInterface
     {
         return array_values($this->salles);
     }
+        public function listerPagine(int $page, int $parPage = 10): array
+    {
+        $salles = array_values($this->salles);
+
+        $total        = count($salles);
+        $dernierePage = max(1, (int) ceil($total / $parPage));
+        $items        = array_slice($salles, ($page - 1) * $parPage, $parPage);
+
+        return [
+            'items'         => $items,
+            'page_actuelle' => $page,
+            'derniere_page' => $dernierePage,
+            'total'         => $total,
+        ];
+    }
 
     public function trouver(int $id): ?Salle
     {

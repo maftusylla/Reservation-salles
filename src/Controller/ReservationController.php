@@ -1,5 +1,6 @@
 <?php
 
+declare(strict_types=1);
 
 namespace App\Controller;
 
@@ -11,46 +12,42 @@ use App\Repository\ReservationRepositoryInterface;
 use App\Repository\SalleRepositoryInterface;
 use App\Service\AnnulerReservationService;
 use App\Service\CreerReservationService;
-use App\Validation\ReservationValidator;
-use App\View\Renderer;
+use App\Validation\ReservationValidatorInterface;
 use App\View\ViewFormatterInterface;
-use Tests\Unit\ReservationValidatorTest;
 
-final class ReservationController
+final class ReservationController extends AbstractController
 {
-   public function __construct(
-    private readonly ReservationRepositoryInterface $reservations,
-    private readonly SalleRepositoryInterface $salles,
-    private readonly CreerReservationService $creerReservation,
-    private readonly AnnulerReservationService $annulerReservation,
-    private readonly ViewFormatterInterface $formatter,
-    private readonly ReservationValidator $reservation_validator,
+    public function __construct(
+        private readonly ReservationRepositoryInterface $reservations,
+        private readonly SalleRepositoryInterface $salles,
+        private readonly CreerReservationService $creerReservation,
+        private readonly AnnulerReservationService $annulerReservation,
+        ViewFormatterInterface $formatter,
+        private readonly ReservationValidatorInterface $reservation_validator,
+    ) {
+        parent::__construct($formatter);
+    }
 
-) {
-}
-
-    public function index(): string
+        public function index(): string
     {
         $salleId = isset($_GET['salle_id']) && $_GET['salle_id'] !== ''
             ? (int) $_GET['salle_id']
             : null;
 
-        $reservations = $this->reservations->lister();
+        $page = isset($_GET['page']) && ctype_digit((string) $_GET['page'])
+            ? max(1, (int) $_GET['page'])
+            : 1;
 
-        if ($salleId !== null) {
-            $reservations = array_values(array_filter(
-                $reservations,
-                static fn ($reservation) => $reservation->salle_id === $salleId
-            ));
-        }
+        $resultat = $this->reservations->listerPagine($salleId, $page, 5);
 
         return $this->page('Liste des réservations', 'reservation/index', [
-            'reservations' => $reservations,
+            'reservations' => $resultat['items'],
             'salles'       => $this->salles->lister(),
             'salleId'      => $salleId,
+            'pageActuelle' => $resultat['page_actuelle'],
+            'dernierePage' => $resultat['derniere_page'],
         ]);
     }
-
     public function show(int $id): string
     {
         $reservation = $this->reservations->trouver($id);
@@ -72,61 +69,41 @@ final class ReservationController
     }
 
     public function store(): string
-{
-    $data = [
-        'salle_id'    => $_POST['salle_id'] ?? '',
-        'responsable' => $_POST['responsable'] ?? '',
-        'email'       => $_POST['email'] ?? '',
-        'motif'       => $_POST['motif'] ?? '',
-        'date_debut'  => $_POST['date_debut'] ?? '',
-        'date_fin'    => $_POST['date_fin'] ?? '',
-    ];
+    {
+        $data = [
+            'salle_id'    => $_POST['salle_id'] ?? '',
+            'responsable' => $_POST['responsable'] ?? '',
+            'email'       => $_POST['email'] ?? '',
+            'motif'       => $_POST['motif'] ?? '',
+            'date_debut'  => $_POST['date_debut'] ?? '',
+            'date_fin'    => $_POST['date_fin'] ?? '',
+        ];
 
-    try {
-        $dto = CreerReservationDTO::builder($this->reservation_validator)
-            ->avecSalleId($data['salle_id'])
-            ->avecResponsable($data['responsable'])
-            ->avecEmail($data['email'])
-            ->avecMotif($data['motif'])
-            ->avecDateDebut($data['date_debut'])
-            ->avecDateFin($data['date_fin'])
-            ->build();
-    } catch (ValidationEchoueeException $exception) {
-        return $this->page('Créer une réservation', 'reservation/form', [
-            'salles' => $this->salles->lister(),
-            'errors' => $exception->resultat()->errors(),
-            'old'    => $data,
-        ]);
-    }
+        
+            $dto = CreerReservationDTO::builder($this->reservation_validator)
+                ->avecContexte('Créer une réservation', 'reservation/form', ['salles' => $this->salles->lister()])
+                ->avecSalleId($data['salle_id'])
+                ->avecResponsable($data['responsable'])
+                ->avecEmail($data['email'])
+                ->avecMotif($data['motif'])
+                ->avecDateDebut($data['date_debut'])
+                ->avecDateFin($data['date_fin'])
+                ->build();
+        
 
-    try {
         $reservation = $this->creerReservation->executer($dto);
-    } catch (SalleIndisponibleException $exception) {
-        return $this->page('Créer une réservation', 'reservation/form', [
-            'salles' => $this->salles->lister(),
-            'errors' => ['general' => $exception->getMessage()],
-            'old'    => $data,
-        ]);
-    }
 
-    header('Location: /reservations/' . $reservation->id);
-    exit;
-}
+        return $this->succes('/reservations/' . $reservation->id, $reservation->toArray(), 201);
+    }
 
     public function cancel(int $id): string
     {
         try {
-            $this->annulerReservation->executer($id);
+            $reservation = $this->annulerReservation->executer($id);
         } catch (ReservationIntrouvableException) {
             return $this->page('Réservation introuvable', 'error/404', [], 404);
         }
 
-        header('Location: /reservations/' . $id);
-        exit;
+        return $this->succes('/reservations/' . $id, $reservation->toArray());
     }
-
-    private function page(string $titre, string $vue, array $data = [], int $code = 200): string
-{
-    return $this->formatter->repondre($titre, $vue, $data, $code);
-}
 }

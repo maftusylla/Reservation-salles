@@ -1,16 +1,18 @@
 <?php
 
+declare(strict_types=1);
 
 namespace App\Exception;
 
 use RuntimeException;
 
-final class SalleIndisponibleException extends RuntimeException
+final class EmailDejaUtiliseException extends RuntimeException
 {
-  public function __construct(
+
+    public function __construct(
         string $message,
-        private readonly string $titre = 'Réservation impossible',
-        private readonly string $vue = 'reservation/form',
+        private readonly string $titre = 'Inscription',
+        private readonly string $vue = 'auth/inscription',
         private readonly array $contexte = [],
     ) {
         parent::__construct($message);

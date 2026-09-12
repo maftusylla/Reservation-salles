@@ -3,7 +3,7 @@
 
 namespace App\Validation;
 
-interface ValidatorInterface
+interface SalleValidatorInterface
 {
     public function validate(array $data): ValidationResult;
 }
